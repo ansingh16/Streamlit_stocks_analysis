@@ -6,10 +6,10 @@ from modules.data_processing import add_portfolio_entry, process_fund
 from multiprocessing import Pool
 
 
-def search_fund(search_term):
+def search_stock(search_term):
 
         # search for mutual funds
-        response = mstarpy.search_funds(term=search_term, field=["Name"],country="in", pageSize=100000)
+        response = mstarpy.search_stock(term=search_term, field=["Name","fundShareClassId"], exchange='XNSE', pageSize=100000)
         # convert to dataframe
         response = pd.DataFrame(response)
 
@@ -18,34 +18,37 @@ def search_fund(search_term):
 
 
         # Display the selectbox with filtered options
-        selected_mutual_funds = st.selectbox('Select an option', filtered_options)
+        selected_stock = st.selectbox('Select an option', filtered_options)
 
 
         
-        if selected_mutual_funds != ' ':
+        if selected_stock != ' ':
 
-            include_units = st.text_input(label="Units", key=2, value=1)
+            # include_units = st.text_input(label="Shares", key=2, value=1)
             if st.button("Add", key="add"):
+                    
+                    # stockid
+                    stockid = response.loc[response['Name'] == selected_stock, 'fundShareClassId'].iloc[0]
                     # add screener
-                    fund_data = mstarpy.Funds(term=selected_mutual_funds, country="in")
-
+                    stock_data = mstarpy.Stock(term=f"{stockid}", exchange="XNSE")
+                    print(stock_data)
                     # today
                     today = datetime.date.today()
                     # yesterday
                     yesterday = today - datetime.timedelta(days=2)
 
                     #get historical data
-                    history = fund_data.nav(start_date=yesterday,end_date=today, frequency="daily")
+                    history = stock_data.historical(start_date=yesterday,end_date=today, frequency="daily")
                     
                     
                     # if history is not empty
                     if len(history) > 0:
                         # with spinner:
                         df_history = pd.DataFrame(history)
-                        nav = df_history['nav'].iloc[-1]
+                        stock_price = df_history['close'].iloc[-1]
 
                         
-                        add_portfolio_entry(fund_data, include_units,nav)
+                        add_portfolio_entry(stock_data,stock_price)
 
         return
 

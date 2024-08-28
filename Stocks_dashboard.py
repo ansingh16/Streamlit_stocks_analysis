@@ -7,8 +7,8 @@ import pandas as pd
 from streamlit.components.v1 import html
 from streamlit_navigation_bar import st_navbar
 from modules.data_processing import  check_ckbox
-from modules.data_processing import  stock_plots
-from modules.dashboard import search_fund, add_portfolio_file
+from modules.data_processing import  swot_chart
+from modules.dashboard import search_stock, add_portfolio_file
 
 
  # Initialize session state variables if not already initialized
@@ -49,7 +49,7 @@ styles_nav = {
 def main():
 
     
-    pages = ["Stock Analysis"]
+    pages = ["Stock Analysis", "SWOT Dashboard"]
     
     
     # Add entry to the list of inputs
@@ -75,7 +75,7 @@ def main():
 
         if search_term:
             
-            search_fund(search_term)
+            search_stock(search_term)
             
 
         st.header('OR')
@@ -115,14 +115,7 @@ def main():
         # check which checkboxes are checked
         st.session_state.portfolio = check_ckbox()
 
-        # check if portfolio is not empty
-        if st.session_state.portfolio.shape[0] >0:
-                    
-                    consol_holdings = get_consol_holdings()
-
-                    # set session state for consol_holdings
-                    st.session_state["consol_holdings"] = consol_holdings
-
+        
 
 
     # Custom CSS to create a 2-inch spacer
@@ -140,14 +133,21 @@ def main():
     st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
     # Render the navigation bar
-    navigation = st_navbar(pages, styles=styles_nav,selected='Stock Analysis')
+    navigation = st_navbar(pages, styles=styles_nav,selected='SWOT Dashboard')
 
 
 
 
     # Call the appropriate function based on the selected page
-    if navigation == 'Stock Analysis':
-        stock_plots()
+    if navigation == 'SWOT Dashboard':
+        
+        # Display the content of the REAMD.md file
+        with open('README.md', 'r') as f:
+            st.markdown(f.read(), unsafe_allow_html=True)
+    
+    if navigation == 'Stock Monitor':
+
+        swot_chart()
     
 
     
